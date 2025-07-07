@@ -1,4 +1,4 @@
-print("Brainrot Neon UI Loaded")
+print("Brainrot UI Loaded")
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -15,7 +15,7 @@ frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
--- Neon Logo "Dmark"
+-- Logo Dmark
 local logo = Instance.new("TextLabel", frame)
 logo.Text = "Dmark"
 logo.Font = Enum.Font.GothamBlack
@@ -27,7 +27,7 @@ logo.BackgroundTransparency = 1
 logo.Size = UDim2.new(0, 120, 0, 25)
 logo.Position = UDim2.new(0, 10, 0, 5)
 
--- Close Button
+-- Close button
 local close = Instance.new("TextButton", frame)
 close.Text = "X"
 close.Size = UDim2.new(0, 30, 0, 25)
@@ -40,15 +40,15 @@ close.MouseButton1Click:Connect(function()
 	gui:Destroy()
 end)
 
--- Tab Names
-local tabNames = {"Main", "Visual", "Misc"}
-local tabs = {}
-local selectedTab = nil
-
+-- Tabs
 local buttonFrame = Instance.new("Frame", frame)
 buttonFrame.Size = UDim2.new(1, 0, 0, 35)
-buttonFrame.Position = UDim2.new(0, 0, 0, 35)
+buttonFrame.Position = UDim2.new(0, 0, 0, 40)
 buttonFrame.BackgroundTransparency = 1
+
+local tabs = {}
+local tabNames = {"Main", "Visual"}
+local selectedTab = nil
 
 for i, name in ipairs(tabNames) do
 	local btn = Instance.new("TextButton", buttonFrame)
@@ -61,8 +61,8 @@ for i, name in ipairs(tabNames) do
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
 	local tabFrame = Instance.new("Frame", frame)
-	tabFrame.Position = UDim2.new(0, 0, 0, 70)
-	tabFrame.Size = UDim2.new(1, 0, 1, -70)
+	tabFrame.Position = UDim2.new(0, 0, 0, 75)
+	tabFrame.Size = UDim2.new(1, 0, 1, -75)
 	tabFrame.Visible = false
 	tabFrame.BackgroundTransparency = 1
 	tabs[name] = tabFrame
@@ -78,73 +78,38 @@ for i, name in ipairs(tabNames) do
 	end
 end
 
--- Toggle Generator
-local function createToggle(parent, text)
+-- Toggle
+local function createToggle(parent, text, callback)
 	local toggle = Instance.new("TextButton", parent)
 	toggle.Size = UDim2.new(0, 160, 0, 30)
 	toggle.BackgroundColor3 = Color3.fromRGB(55, 55, 90)
 	toggle.Text = text .. ": OFF"
 	toggle.TextColor3 = Color3.fromRGB(0, 255, 255)
 	toggle.BorderSizePixel = 0
-	toggle.AutoButtonColor = true
 	Instance.new("UICorner", toggle)
 
 	local state = false
 	toggle.MouseButton1Click:Connect(function()
 		state = not state
 		toggle.Text = text .. ": " .. (state and "ON" or "OFF")
+		if callback then callback(state) end
 	end)
 
 	return toggle
 end
 
--- Toggle for Main
-local y = 10
-for _, name in ipairs({"Air Jump", "Speed Boost", "Float", "Anti Stun", "Anti Afk", "Steal Helper"}) do
-	local t = createToggle(tabs["Main"], name)
-	t.Position = UDim2.new(0, 10, 0, y)
-	y = y + 35
-end
-
--- Toggle for Visual
-y = 10
-for _, name in ipairs({"ESP HighLight", "ESP Name", "ESP Base Time", "ESP Brainrot"}) do
-	local t = createToggle(tabs["Visual"], name)
-	t.Position = UDim2.new(0, 10, 0, y)
-	y = y + 35
-end
-
--- Button for Misc
-y = 10
-for _, name in ipairs({"Invisibility Cloak", "Bee Launcher", "Medusa's Head", "Quantum Cloner", "Rainbowrath Sword"}) do
-	local t = Instance.new("TextButton", tabs["Misc"])
-	t.Size = UDim2.new(0, 300, 0, 30)
-	t.Position = UDim2.new(0, 10, 0, y)
-	t.Text = name
-	t.BackgroundColor3 = Color3.fromRGB(55, 55, 90)
-	t.TextColor3 = Color3.fromRGB(255, 0, 255)
-	t.BorderSizePixel = 0
-	Instance.new("UICorner", t)
-	y = y + 35
-end
-
--- Hover Glow
-local function addNeonHover(button, color)
-	if not button:IsA("TextButton") then return end
-	local originalColor = button.BackgroundColor3
-	local hoverColor = color or Color3.fromRGB(80, 0, 255)
-
-	button.MouseEnter:Connect(function()
-		TweenService:Create(button, TweenInfo.new(0.15), {BackgroundColor3 = hoverColor}):Play()
-	end)
-	button.MouseLeave:Connect(function()
-		TweenService:Create(button, TweenInfo.new(0.15), {BackgroundColor3 = originalColor}):Play()
-	end)
-end
-
--- Apply hover to all buttons
-for _, obj in pairs(gui:GetDescendants()) do
-	if obj:IsA("TextButton") then
-		addNeonHover(obj)
+-- ESP Toggle
+local espToggle = createToggle(tabs["Visual"], "ESP Name", function(state)
+	if state then
+		local espFunc = loadstring(readfile("esp.lua")) -- Ganti dengan game:HttpGet jika online
+		if espFunc then espFunc() end
+	else
+		for _, plr in pairs(Players:GetPlayers()) do
+			if plr ~= Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") then
+				local esp = plr.Character.Head:FindFirstChild("ESP")
+				if esp then esp:Destroy() end
+			end
+		end
 	end
-end
+end)
+espToggle.Position = UDim2.new(0, 10, 0, 10)
